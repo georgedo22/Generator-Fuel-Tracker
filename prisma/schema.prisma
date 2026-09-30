@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  KEROSENE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(OPERATOR)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Generator {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  location  String
+  imageUrl  String?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  fuelLogs  FuelLog[]
+}
+
+model FuelLog {
+  id                 String   @id @default(cuid())
+  generatorId        String
+  generator          Generator @relation(fields: [generatorId], references: [id], onDelete: Cascade)
+
+  date               DateTime
+  time               String
+  hourReading        Float
+  liters             Float
+  pricePerLiter      Float
+  fuelType           FuelType
+  isTankFull         Boolean  @default(false)
+
+  // Computed by the full-to-full algorithm
+  hoursWorked        Float?
+  consumptionPerHour Float?
+  cost               Float
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([generatorId, hourReading])
+}

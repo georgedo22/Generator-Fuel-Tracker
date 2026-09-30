@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: generator-tracker
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /login
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: NODE_VERSION
+        value: 22
+    disk:
+      name: generator-data
+      mountPath: /var/data
+      sizeGB: 1
+
+databases:
+  - name: generators-db
+    databaseName: generators
+    user: generators
+    plan: basic-256mb
